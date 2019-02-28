@@ -7,16 +7,18 @@ export default class Modal extends Component {
     super(props);
     this.state = {
       isVisible: props.visible,
-      userNames: []
+      userNames: [],
+      inputName: ''
     };
 
     this.toggleModal = this.toggleModal.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleRemoveUser = this.handleRemoveUser.bind(this);
   }
 
   getUsernames() {
-    const userNames = fs.readFileSync(path.join(__dirname, '../usernames.json'), 'utf8');
-    const namesArr = JSON.parse(userNames);
-    return namesArr.names;
+    const data = fs.readFileSync(path.join(__dirname, '../usernames.json'), 'utf8');
+    return JSON.parse(data).names;
   }
 
   handleAddNewUser() {/*
@@ -58,6 +60,31 @@ export default class Modal extends Component {
     });*/
   }
 
+  handleChange(e) {
+    const { name, value } = e.target;
+
+    if (name && this.state.hasOwnProperty(name)) {
+      this.setState({ name: value });
+    }
+  }
+
+  handleRemoveUser(e) {
+    const usn = e.target.getAttribute('data-username');
+
+    // Filter out the one that was deleted by returning false when it hits
+    const newNames = this.state.userNames.filter(name => name !== usn);
+    this.saveUsersToFile({ names: newNames });
+  }
+
+  saveUsersToFile(obj) {
+    // Save the new usernames to the usernames-file
+    fs.writeFile(path.join(__dirname, '../usernames.json'), JSON.stringify(obj), (err) => {
+      if (err) throw new Error(err);
+      // Update the state to handle visual synchronization
+      this.setState({ userNames: obj.names });
+    });
+  }
+
   toggleModal(e) {
     const newState = !this.state.isVisible;
 
@@ -66,10 +93,6 @@ export default class Modal extends Component {
     if (e.currentTarget === e.target) {
       this.setState({ isVisible: newState });
     }
-  }
-
-  handleRemoveUser() {
-    //
   }
 
   render() {
@@ -87,12 +110,20 @@ export default class Modal extends Component {
                   <img
                     className="btn-remove"
                     src="./images/sharp_clear_white_48dp.png"
+                    data-username={name}
                     onClick={this.handleRemoveUser}
                   />
                 </li>)
               })
             }</ul>
-            <input className="user-add" type="text" placeholder="Add a new user" />
+            <input
+              className="user-add"
+              name="inputName"
+              type="text"
+              placeholder="Add a new user"
+              value={this.state.inputName}
+              onChange={this.handleChange}
+            />
             <img className="btn-send" src="images/sharp_send_white_48dp.png" />
           </div>
         </div>
