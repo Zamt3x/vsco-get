@@ -1,0 +1,22 @@
+{
+  "name": "vsco-get",
+  "version": "0.0.1",
+  "main": "app/index.js",
+  "scripts": {
+    "start": "electron --require babel-register .",
+    "build": "electron-packager . vsco-get"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "electron": "^3.0.6",
+    "electron-packager": "^12.2.0"
+  },
+  "dependencies": {
+    "image-downloader": "^3.4.1",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3"
+  }
+}
