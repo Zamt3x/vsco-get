@@ -13,58 +13,38 @@ export default class Modal extends Component {
 
     this.toggleModal = this.toggleModal.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleAddNewUser = this.handleAddNewUser.bind(this);
     this.handleRemoveUser = this.handleRemoveUser.bind(this);
   }
 
+  // Methods for settings modal
   getUsernames() {
     const data = fs.readFileSync(path.join(__dirname, '../usernames.json'), 'utf8');
     return JSON.parse(data).names;
   }
 
-  handleAddNewUser() {/*
-    const handler = () => {
-      const userInput = inputNode.value.trim();
+  handleAddNewUser() {
+    const userInput = this.state['inputName'].trim();
 
-      // Don't execute any further if the name was whitespace or empty
-      if (!userInput) {
-        inputNode.value = '';
-        return;
-      };
-
-      // Read and parse the stored names
-      const userNames = fs.readFileSync(path.join(__dirname, '../usernames.json'), 'utf8');
-      let namesArr = JSON.parse(userNames).names;
-
-      // If the name already exists in the list, exit function
-      if (namesArr.includes(userInput)) {
-        inputNode.value = '';
-        return;
-      }
-
-      // Insert the new name
-      namesArr.push(userInput);
-
-      // Write the new object to the file
-      const obj = { names: namesArr };
-      fs.writeFileSync(path.join(__dirname, '../usernames.json'), JSON.stringify(obj));
-
-      // Visually update with the new name as a list item
-      const itemNode = this._buildUserNode(userInput, listNode);
-      listNode.appendChild(itemNode);
-      inputNode.value = '';
+    // Don't execute further if the name was whitespace, empty or already exists
+    if (!userInput || this.state.userNames.includes(userInput)) {
+      this.setState({ inputName: '' });
+      return;
     }
 
-    sendNode.addEventListener('click', () => handler());
-    inputNode.addEventListener('keyup', e => {
-      if (e.key === 'Enter') handler();
-    });*/
+    const newNames = this.state.userNames;
+    newNames.push(userInput);
+
+    // Save the new name (both state and usernames-file)
+    this.saveUsers({ names: newNames });
+    this.setState({ userInput: '' });
   }
 
-  handleChange(e) {
-    const { name, value } = e.target;
+  handleChange({ target }) {
+    const { name, value } = target;
 
     if (name && this.state.hasOwnProperty(name)) {
-      this.setState({ name: value });
+      this.setState({ [name]: value });
     }
   }
 
@@ -73,13 +53,14 @@ export default class Modal extends Component {
 
     // Filter out the one that was deleted by returning false when it hits
     const newNames = this.state.userNames.filter(name => name !== usn);
-    this.saveUsersToFile({ names: newNames });
+    this.saveUsers({ names: newNames });
   }
 
-  saveUsersToFile(obj) {
+  saveUsers(obj) {
     // Save the new usernames to the usernames-file
     fs.writeFile(path.join(__dirname, '../usernames.json'), JSON.stringify(obj), (err) => {
       if (err) throw new Error(err);
+
       // Update the state to handle visual synchronization
       this.setState({ userNames: obj.names });
     });
@@ -97,35 +78,38 @@ export default class Modal extends Component {
 
   render() {
     const templates = {
-      settings: <div className="modal-bg" onClick={this.toggleModal}>
-        <div className="modal-settings-container">
-          <div className="settings-topbar"></div>
-          <div className="settings-content">
-            <h1>Usernames</h1>
-            <h4>Add or remove usernames from the list</h4>
-            <ul className="users-list scrollbar">{
-              this.state.userNames.map((name, index) => {
-                return (<li className="user" key={"username" + index}>
-                  <span className="user-name">{name}</span>
-                  <img
-                    className="btn-remove"
-                    src="./images/sharp_clear_white_48dp.png"
-                    data-username={name}
-                    onClick={this.handleRemoveUser}
-                  />
-                </li>)
-              })
-            }</ul>
-            <input
-              className="user-add"
-              name="inputName"
-              type="text"
-              placeholder="Add a new user"
-              value={this.state.inputName}
-              onChange={this.handleChange}
-            />
-            <img className="btn-send" src="images/sharp_send_white_48dp.png" />
-          </div>
+      settings: <div className="modal-settings-container">
+        <div className="settings-topbar"></div>
+        <div className="settings-content">
+          <h1>Usernames</h1>
+          <h4>Add or remove usernames from the list</h4>
+          <ul className="users-list scrollbar">{
+            this.state.userNames.map((name, index) => {
+              return (<li className="user" key={"username" + index}>
+                <span className="user-name">{name}</span>
+                <img
+                  className="btn-remove"
+                  src="./images/sharp_clear_white_48dp.png"
+                  data-username={name}
+                  onClick={this.handleRemoveUser}
+                />
+              </li>)
+            })
+          }</ul>
+          <input
+            className="user-add"
+            name="inputName"
+            type="text"
+            placeholder="Add a new user"
+            value={this.state.inputName}
+            onChange={this.handleChange}
+            onKeyUp={(e) => { if (e.key === 'Enter') this.handleAddNewUser(e) }}
+          />
+          <img
+            className="btn-send"
+            src="images/sharp_send_white_48dp.png"
+            onClick={this.handleAddNewUser}
+          />
         </div>
       </div>,
       image: <div>Img</div>
@@ -134,8 +118,11 @@ export default class Modal extends Component {
     const visible = this.state.isVisible;
     const type = this.props.type;
     // If the component is visible, render using the correct template (specified
-    // using type coming from props)
-    return ((visible && type) ? templates[type] : null);
+    // using the type from props)
+    return ((visible && type)
+      ? <div className="modal-bg" onClick={this.toggleModal}>{templates[type]}</div>
+      : null
+    );
   }
 
   componentDidMount() {
