@@ -20,16 +20,12 @@ class App extends Component {
 
   handleModalToggle(type, state) {
     if (state === "open") {
-      this.setState({
-        modalVisible: true,
-        modalType: type
-      });
+      this.setState({ modalVisible: true });
     } else if (state === "close") {
-      this.setState({
-        modalVisible: false,
-        modalType: type
-      });
+      this.setState({ modalVisible: false });
     }
+
+    this.setState({ modalType: type });
   }
 
   switchModalSource(src) {

@@ -26,7 +26,7 @@ function setup() {
   // Window is initialized to not show to avoid app bg from flashing on startup
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
-    mainWindow.openDevTools();
+    //mainWindow.openDevTools();
   });
 
   // Dereference window variable when window is closed

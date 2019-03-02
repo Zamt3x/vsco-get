@@ -272,3 +272,13 @@ body {
   width: 100%;
   color:#cccccc;
 }
+
+.empty-container {
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: calc(100vh - 36px);
+  font-size: 28px;
+}

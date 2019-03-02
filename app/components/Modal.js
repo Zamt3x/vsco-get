@@ -132,7 +132,7 @@ export default class Modal extends Component {
     // using the type from props)
     return (
       (visible && type)
-        ? <div className="modal-bg" onClick={() => { this.props.modalToggle("settings", "close") }}>{templates[type]}</div>
+        ? <div className="modal-bg" onClick={() => { this.props.modalToggle(null, "close") }}>{templates[type]}</div>
         : null
     );
   }

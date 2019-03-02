@@ -34,14 +34,14 @@ export default class ImageGrid extends Component {
   }
 
   render() {
-    const buildImage = imageData => {
+    const buildImage = (imageData, index) => {
       const { gridName, responsiveUrl, uploadDate, captureDate } = imageData.data;
       const { model, make } = imageData.data.imageMeta
         ? imageData.data.imageMeta
         : { model: "Undefined phone", make: "a company not specified" };
 
       return (
-        <div className="image-container">
+        <div className="image-container" key={"image" + index}>
           <img
             className="image"
             src={`https://${responsiveUrl}`}
@@ -61,11 +61,19 @@ export default class ImageGrid extends Component {
     };
 
     return (
-      <div className="grid-container scrollbar">
-        <div id="imagegrid" className="imagegrid">
-          {this.state.images.map(data => buildImage(data))}
-        </div>
-      </div>
+      (this.state.images.length > 0)
+        ? (
+          <div className="grid-container scrollbar">
+            <div id="imagegrid" className="imagegrid">
+              {this.state.images.map((data, index) => buildImage(data, index))}
+            </div>
+          </div>
+        )
+        : (
+          <div className="empty-container">
+            <p>Images are currently loading ...</p>
+          </div>
+        )
     );
   }
 
