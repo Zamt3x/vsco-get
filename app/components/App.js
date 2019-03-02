@@ -1,28 +1,57 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
-import Menubar from './Menubar';
 import Modal from './Modal';
+import Menubar from './Menubar';
+import ImageGrid from './ImageGrid';
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      modalVisible: false
+      modalVisible: false,
+      modalType: '',
+      modalSrc: ''
     };
 
     this.handleModalToggle = this.handleModalToggle.bind(this);
+    this.switchModalSource = this.switchModalSource.bind(this);
   }
 
-  handleModalToggle() {
-    this.setState({ modalVisible: !this.state.modalVisible });
+  handleModalToggle(type, state) {
+    if (state === "open") {
+      this.setState({
+        modalVisible: true,
+        modalType: type
+      });
+    } else if (state === "close") {
+      this.setState({
+        modalVisible: false,
+        modalType: type
+      });
+    }
+  }
+
+  switchModalSource(src) {
+    this.setState({ modalSrc: src });
   }
 
   render() {
     return (
       <div>
-        <Menubar toggleModal={this.handleModalToggle} />
-        <Modal type="settings" visible={this.state.modalVisible} toggleModal={this.handleModalToggle} />
+        <Modal
+          type={this.state.modalType}
+          visible={this.state.modalVisible}
+          modalToggle={(type, state) => { this.handleModalToggle(type, state) }}
+          src={this.state.modalSrc}
+        />
+        <Menubar
+          modalToggle={(type, state) => { this.handleModalToggle(type, state) }}
+        />
+        <ImageGrid
+          modalToggle={(type, state) => { this.handleModalToggle(type, state) }}
+          switchModalSource={(src) => this.switchModalSource(src)}
+        />
       </div>
     );
   }

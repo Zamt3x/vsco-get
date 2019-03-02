@@ -55,7 +55,7 @@ export default class Modal extends Component {
     });
 
     if (targetLocation) {
-      download.image({ url: this.state.imageSrc, dest: targetLocation[0] })
+      download.image({ url: this.props.src, dest: targetLocation[0] })
         .then(({ filename, image }) => {
           // success
         })
@@ -95,17 +95,34 @@ export default class Modal extends Component {
               return (
                 <li className="user" key={"username" + index}>
                   <span className="user-name">{name}</span>
-                  <img className="btn-remove" src="./images/sharp_clear_white_48dp.png" data-username={name} onClick={this.handleRemoveUser} />
+                  <img
+                    className="btn-remove"
+                    src="./images/sharp_clear_white_48dp.png"
+                    data-username={name}
+                    onClick={this.handleRemoveUser}
+                  />
                 </li>
               )
             })
           }</ul>
-          <input className="user-add" name="inputName" type="text" placeholder="Add a new user" value={this.state.inputName} onChange={this.handleChange} onKeyUp={(e) => { if (e.key === 'Enter') this.handleAddNewUser(e) }} />
-          <img className="btn-send" src="images/sharp_send_white_48dp.png" onClick={this.handleAddNewUser} />
+          <input
+            className="user-add"
+            name="inputName"
+            type="text"
+            placeholder="Add a new user"
+            value={this.state.inputName}
+            onChange={this.handleChange}
+            onKeyUp={(e) => { if (e.key === 'Enter') this.handleAddNewUser(e) }}
+          />
+          <img
+            className="btn-send"
+            src="images/sharp_send_white_48dp.png"
+            onClick={this.handleAddNewUser}
+          />
         </div>
       </div>,
       image: <div className="modal-image-container">
-        <img className="modal-image" src={this.state.imageSrc} alt="Error loading image" />
+        <img className="modal-image" src={this.props.src} />
         <button className="btn-download" onClick={this.handleDownloadImage}>Download Image</button>
       </div>
     };
@@ -115,7 +132,7 @@ export default class Modal extends Component {
     // using the type from props)
     return (
       (visible && type)
-        ? <div className="modal-bg" onClick={this.props.toggleModal}>{templates[type]}</div>
+        ? <div className="modal-bg" onClick={() => { this.props.modalToggle("settings", "close") }}>{templates[type]}</div>
         : null
     );
   }

@@ -1,6 +1,5 @@
-const https = require('https');
-const path = require('path');
-const ImageGrid = require('./Components/ImageGrid');
+import https from 'https';
+import path from 'path';
 
 function fetchPageHTML(username, pageNum, callback) {
   https.get(`https://vsco.co/${username}/images/${pageNum}`, res => {
@@ -20,7 +19,7 @@ function fetchPageHTML(username, pageNum, callback) {
 
 function getNamesFromFile(fileName) {
   // Fetch specified file with require to parse as json
-  const pathName = path.join(__dirname, fileName);
+  const pathName = path.join(__dirname, '../', fileName);
   const usernames = require(pathName);
   return usernames.names;
 }
@@ -78,7 +77,7 @@ function extractObjsFromStrUsingID(objStr, IDArr) {
   return imagesDataArr;
 }
 
-function main() {
+export default function main(callback) {
   // Later versions may include support for loading images from multiple pages
   let currentPage = 1;
 
@@ -89,6 +88,7 @@ function main() {
   // Usernames will be stored in a separate json file to easily make any
   // updates to its content
   const usernames = getNamesFromFile('usernames.json');
+  const totalAwaited = maxImagesPerUser * usernames.length;
 
   // maxImagesPerUser is extracted for every user specified in usernames.json
   for (let name of usernames) {
@@ -97,28 +97,24 @@ function main() {
       // Based on the response, we process the page text or inform about any error
       if (pageText instanceof Error) {
         throw new Error(pageText);
-      } else {
-        // Startindex will include the search value, so to exclude it so that
-        // result starts with "{", we add search value length to startindex.
-        // "entities" is a unique key in VSCO's data where info for all images is
-        const searchValue = '"entities":';
-        const match = pageText.match(new RegExp(searchValue));
-        const startIndex = match.index + searchValue.length;
-        const imagesWrapperObj = extractObjFromStrUsingStartindex(pageText, startIndex);
-
-        // Get the array of unique image ID's from current page
-        const imageIDs = extractImageIDs(pageText, currentPage, maxImagesPerUser);
-
-        // Extract all data for each image based on the image ID's gathered
-        const imagesData = extractObjsFromStrUsingID(imagesWrapperObj, imageIDs);
-
-        // For every batch of images (from each username) we update the DOM to keep
-        // the user from waiting until entire script is done executing
-        ImageGrid.render(imagesData);
       }
+
+      // Startindex will include the search value, so to exclude it so that
+      // result starts with "{", we add search value length to startindex.
+      // "entities" is a unique key in VSCO's data where info for all images is
+      // located
+      const searchValue = '"entities":';
+      const match = pageText.match(new RegExp(searchValue));
+      const startIndex = match.index + searchValue.length;
+      const imagesWrapperObj = extractObjFromStrUsingStartindex(pageText, startIndex);
+
+      // Get the array of unique image ID's from current page
+      const imageIDs = extractImageIDs(pageText, currentPage, maxImagesPerUser);
+
+      // Extract all data for each image based on the image ID's gathered
+      const imagesData = extractObjsFromStrUsingID(imagesWrapperObj, imageIDs);
+
+      if (typeof callback === 'function') callback(imagesData, totalAwaited);
     });
   }
 }
-
-// Call the main function when script is loaded
-main();
